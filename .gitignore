@@ -1,0 +1,27 @@
+# Ignore Python virtual environment folders
+venv/
+*.py[cod]
+__pycache__/
+*.py[co]
+
+# Ignore VS Code workspace files
+.vscode/
+*.vscode
+
+# Ignore IDE-specific files
+*.swp
+*.swo
+*.py.tmpl
+*.pyde
+*.pyg
+*.pyo
+*.pyd
+
+# Ignore other common files
+.DS_Store
+.Trash
+.env
+
+# custom
+output_files/
+tmp
