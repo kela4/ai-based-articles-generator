@@ -1,0 +1,20 @@
+[
+  {
+    "pdf_filename": "vy7kb9iz8pbi.pdf",
+    "topic": "the impact of globalization on economies",
+    "model_used": "ministral-3:3b-cloud",
+    "generated_at": "2026-02-25T23:07:31.280915"
+  },
+  {
+    "pdf_filename": "vzefremgkg8l.pdf",
+    "topic": "the gut microbiome and overall health",
+    "model_used": "ministral-3:3b-cloud",
+    "generated_at": "2026-02-25T23:07:37.234389"
+  },
+  {
+    "pdf_filename": "837op0x9xedm.pdf",
+    "topic": "financial planning for retirement",
+    "model_used": "ministral-3:3b-cloud",
+    "generated_at": "2026-02-25T23:07:43.992703"
+  }
+]
