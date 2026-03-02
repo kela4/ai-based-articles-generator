@@ -581,6 +581,10 @@ def text_to_pdf(text: str, pdf_path: str) -> None:
     """
     Convert text content to a nicely formatted PDF file.
     """
+    # Global variables
+    global SKIPPED_FAILED_PARSING_FILES_COUNT
+    global FAILED_PARSING_FILES_TO_MARKDOWN_COUNT
+        
     # Create custom styles
     styles = getSampleStyleSheet()
 
