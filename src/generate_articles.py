@@ -63,6 +63,12 @@ def parse_args():
         default=os.getenv("SKIP_FAILED_PARSING_FILES", False),
         help="Skip a generated model-text if text is not parsable as excepted."
     )
+    parser.add_argument(
+        "--language",
+        type=str,
+        default=os.getenv("LANGUAGE", "en"),
+        help="Language for generated articles (e.g., en, es, fr, de, it, pt, zh, ja)."
+    )
 
     return parser.parse_args()
 
@@ -86,6 +92,9 @@ OUTPUT_DIR = args.output_dir
 SKIP_FAILED_PARSING_FILES=args.skip_failed_parsing_files
 SKIPPED_FAILED_PARSING_FILES_COUNT = 0
 FAILED_PARSING_FILES_TO_MARKDOWN_COUNT = 0
+
+# Language for generated articles
+LANGUAGE = args.language
 
 if API_VARIANT == "ollama" and MODEL_API_BASE_URL in ("", None):
     MODEL_API_BASE_URL = "https://ollama.com" # cloud variant
@@ -484,11 +493,51 @@ def generate_random_filename(extension: str = "pdf") -> str:
     random_chars = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
     return f"{random_chars}.{extension}"
 
-def get_article_generation_prompt(topic: str = "a green apple") -> str:
+def get_article_generation_prompt(topic: str = "a green apple", language: str = "en") -> str:
     """Returns the generate article prompt."""
+    # Map language codes to full language names for the prompt
+    language_names = {
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "zh": "Chinese",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "ru": "Russian",
+        "ar": "Arabic",
+        "nl": "Dutch",
+        "pl": "Polish",
+        "tr": "Turkish",
+        "vi": "Vietnamese",
+        "th": "Thai",
+        "sv": "Swedish",
+        "da": "Danish",
+        "fi": "Finnish",
+        "no": "Norwegian",
+        "cs": "Czech",
+        "el": "Greek",
+        "he": "Hebrew",
+        "hi": "Hindi",
+        "id": "Indonesian",
+        "ms": "Malay",
+        "ro": "Romanian",
+        "uk": "Ukrainian",
+    }
+    
+    # Check if input is already a full language name (capitalized)
+    # If so, use it directly without mapping
+    if language and language[0].isupper():
+        language_name = language
+    else:
+        language_name = language_names.get(language.lower(), language)
+    
     # Prompt to generate 1-3 pages of content with markdown formatting
     prompt = f"""Write a comprehensive, well-structured article about {topic}. 
 The article should be approximately 300-500 words (about 1-3 pages when formatted).
+Write the article in {language_name} language.
 Include an engaging introduction, several body sections with detailed explanations, and a conclusion.
 Make it informative and suitable for a general audience.
 
@@ -506,7 +555,7 @@ Make sure that this is a complete and finalized article within the maximum of 3 
 """
     return prompt
 
-def generate_text_with_openai(topic: str) -> str:
+def generate_text_with_openai(topic: str, language: str = "en") -> str:
     """
     Call OpenAI API to generate text about the given topic.
     Returns approximately 1-3 pages of text (500-1000 words).
@@ -523,7 +572,7 @@ def generate_text_with_openai(topic: str) -> str:
         base_url=MODEL_API_BASE_URL if MODEL_API_BASE_URL else None
     )
 
-    prompt = get_article_generation_prompt(topic=topic)
+    prompt = get_article_generation_prompt(topic=topic, language=language)
 
     try:
         response = client.chat.completions.create(
@@ -540,7 +589,7 @@ def generate_text_with_openai(topic: str) -> str:
         print(f"Error calling OpenAI API: {e}")
         exit(1)
 
-def generate_text_with_ollama(topic: str) -> str:
+def generate_text_with_ollama(topic: str, language: str = "en") -> str:
     """
     Call Ollama API to generate text about the given topic.
     Returns approximately 1-3 pages of text (500-1000 words).
@@ -557,7 +606,7 @@ def generate_text_with_ollama(topic: str) -> str:
         headers={'Authorization': f'Bearer {api_key}'}
     )
 
-    prompt = get_article_generation_prompt(topic=topic)
+    prompt = get_article_generation_prompt(topic=topic, language=language)
 
     try:
         response: ChatResponse = client.chat(
@@ -691,13 +740,14 @@ def text_to_pdf(text: str, pdf_path: str) -> None:
                 file.write(text)
                 FAILED_PARSING_FILES_TO_MARKDOWN_COUNT += 1
 
-def save_metadata(pdf_filename: str, topic: str, output_dir: Path) -> None:
+def save_metadata(pdf_filename: str, topic: str, output_dir: Path, language: str = "en") -> None:
     """
-    Save metadata (PDF filename and topic) to a JSON file.
+    Save metadata (PDF filename, topic, and language) to a JSON file.
     """
     metadata = {
         "pdf_filename": pdf_filename,
         "topic": topic,
+        "language": language,
         "model_used": MODEL_NAME,
         "generated_at": datetime.now().isoformat()
     }
@@ -731,9 +781,9 @@ def generate_single_article(output_dir: Path) -> None:
     print(f"Generating text with Model API (model: {MODEL_NAME})...")
     start_time = time.time()
     if API_VARIANT == "ollama":
-        text = generate_text_with_ollama(topic)
+        text = generate_text_with_ollama(topic, LANGUAGE)
     elif API_VARIANT in ["openai", "openai_compatible"]:
-        text = generate_text_with_openai(topic)
+        text = generate_text_with_openai(topic, LANGUAGE)
     else:
         raise ValueError("Invalid API variant")
     api_time = time.time() - start_time
@@ -751,7 +801,7 @@ def generate_single_article(output_dir: Path) -> None:
     print(f"PDF generated in {pdf_time:.2f} seconds")
 
     # Save metadata
-    save_metadata(filename, topic, output_dir)
+    save_metadata(filename, topic, output_dir, LANGUAGE)
 
     total_time = api_time + pdf_time
     print(f"Done! Article about '{topic}' saved to {pdf_path}")
@@ -767,6 +817,7 @@ def main():
     print(f"Configuration:")
     print(f"  - Model: {MODEL_NAME}")
     print(f"  - Base URL: {MODEL_API_BASE_URL if MODEL_API_BASE_URL else 'default'}")
+    print(f"  - Language: {LANGUAGE}")
     print(f"  - Number of PDFs: {NUM_PDFS}")
     print(f"  - Output directory: {output_dir}")
     print(f"  - Number of available topics: {len(RANDOM_TOPICS)}")
