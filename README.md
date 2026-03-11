@@ -86,6 +86,7 @@ export API_VARIANT=openai
 export MODEL_NAME=gpt-4o-mini
 export NUM_PDFS=3
 export OUTPUT_DIR=output_files
+export LANGUAGE=en
 python src/generate_articles.py
 
 # Using environment variables - Ollama
@@ -95,6 +96,7 @@ export MODEL_NAME=ministral-3:3b-cloud
 export MODEL_API_BASE_URL=https://ollama.com
 export NUM_PDFS=3
 export OUTPUT_DIR=output_files
+export LANGUAGE=en
 python src/generate_articles.py
 
 # Using command-line arguments - OpenAI
@@ -102,7 +104,8 @@ python src/generate_articles.py \
     --api_variant openai \
     --model_name gpt-4o-mini \
     --num_pdfs 3 \
-    --output_dir output_files
+    --output_dir output_files \
+    --language en
 
 # Using command-line arguments - Ollama
 export OLLAMA_API_KEY=your-key-here
@@ -111,7 +114,8 @@ python src/generate_articles.py \
     --model_name ministral-3:3b-cloud \
     --model_api_base_url https://ollama.com \
     --num_pdfs 3 \
-    --output_dir output_files
+    --output_dir output_files \
+    --language en
 ```
 
 **Output:**
@@ -125,6 +129,7 @@ python src/generate_articles.py \
   {
     "pdf_filename": "aazl6410ivli.pdf",
     "topic": "the history of coffee",
+    "language": "en",
     "model_used": "gpt-4o-mini",
     "generated_at": "2026-02-25T20:28:20.099085"
   }
@@ -164,6 +169,8 @@ python src/duplicate_files.py \
 
 ### Environment Variables
 
+#### Generate Articles Script (Environment Variables)
+
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | Your OpenAI API key | Required for OpenAI variant |
@@ -174,10 +181,19 @@ python src/duplicate_files.py \
 | `NUM_PDFS` | Number of PDFs to generate | `3` |
 | `OUTPUT_DIR` | Output directory | `output_files` |
 | `SKIP_FAILED_PARSING_FILES` | Skip failed parsing (save as Markdown if false) | `false` |
+| `LANGUAGE` | Language of the article to generate | `en` |
+
+#### Duplicate Files Script (Environment Variables)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SOURCE_DIR` |  Source directory | `./input` |
+| `DESTINATION_DIR` | Destination directory | `./output` |
+| `NUM_COPIES` | Number of copies per file | `10` |
 
 ### Command-Line Arguments
 
-#### Generate Articles Script
+#### Generate Articles Script (Command-Line Arguments)
 
 ```bash
 python src/generate_articles.py [OPTIONS]
@@ -191,8 +207,9 @@ python src/generate_articles.py [OPTIONS]
 | `--num_pdfs` | Number of PDFs to generate | `3` |
 | `--output_dir` | Output directory | `output_files` |
 | `--skip_failed_parsing_files` | Skip failed parsing (true/false) | `false` |
+| `--language` | Language of the article to generate | `en` |
 
-#### Duplicate Files Script
+#### Duplicate Files Script (Command-Line Arguments)
 
 ```bash
 python src/duplicate_files.py [OPTIONS]
